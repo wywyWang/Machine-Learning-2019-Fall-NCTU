@@ -95,7 +95,7 @@ def discrete_mode(training_image_path,training_label_path,testing_image_path,tes
 
     error = 0
     for i in range(test_image_number):
-        print("NOW IS : {}".format(i))
+        # print("NOW IS : {}".format(i))
         answer = int.from_bytes(file_test_label.read(1), byteorder = 'big')
         probability = np.zeros((10), dtype = float)
         test_image = np.zeros((test_image_row * test_image_col), dtype = int)
@@ -109,7 +109,7 @@ def discrete_mode(training_image_path,training_label_path,testing_image_path,tes
                     probability[j] += np.log(float(1e-6 / likelihood_sum[j][k]))
                 else:
                     probability[j] += np.log(float(likelihood[j][k][test_image[k]] / likelihood_sum[j][k]))
-        print("probability = {}".format(probability))
+        # print("probability = {}".format(probability))
         probability = normalization(probability)
         error += print_result(probability, answer)
     print_imagination_discrete(likelihood)

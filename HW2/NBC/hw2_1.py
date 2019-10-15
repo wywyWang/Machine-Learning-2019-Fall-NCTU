@@ -163,7 +163,7 @@ def continuous_mode(training_image_path,training_label_path,testing_image_path,t
     file_test_image, file_test_label = open_test_file(testing_image_path,testing_label_path)
 
     error = 0
-    for image_idx in range(3000):
+    for image_idx in range(10000):
         # print("NOW IS : {}".format(image_idx))
         answer = int.from_bytes(file_test_label.read(1), byteorder = 'big')
         probability = np.zeros((10), dtype = float)

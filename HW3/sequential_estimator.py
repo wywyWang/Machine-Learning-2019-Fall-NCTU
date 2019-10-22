@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
 import math
+np.set_printoptions(precision=5, suppress=True)
 
 # py sequential_estimator.py --M=3.0 --S=5.0
 

@@ -36,7 +36,7 @@ if __name__ == '__main__':
         print("Mean = {}\t Variance = {}".format(est_mean, est_variance))
         print("")
 
-        if (abs(est_mean - given_mean) < 1e-2 and abs(est_variance - given_variance) < 1e-2):
+        if (abs(est_mean - given_mean) < 1e-2 and abs(est_variance - given_variance) < 1e-1):
             break
         else:
             pre_mean = est_mean

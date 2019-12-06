@@ -1,6 +1,7 @@
 from svmutil import *
 import numpy as np
 import csv
+from scipy.spatial.distance import cdist, pdist, squareform
 
 def read_csv():
     with open('./data/X_train.csv') as csv_file:
@@ -27,5 +28,28 @@ def read_csv():
 
     return np.array(x_train), np.array(y_train), np.array(x_test), np.array(y_test)
 
+def combine_kernel(x_train, x_test, best_pair):
+    gamma = best_pair[1]
+    train_linear = np.matmul(x_train, x_train.T)
+    pairwise_sq_dists = squareform(pdist(x_train, 'sqeuclidean'))
+    train_rbf = np.exp(-gamma * pairwise_sq_dists)
+    x_train_kernel = np.hstack((np.arange(1, 5001).reshape((5000, 1)), np.add(train_linear, train_rbf)))
+
+    test_linear = np.matmul(x_test, x_train.T)
+    pairwise_sq_dists = cdist(x_test, x_train, 'sqeuclidean')
+    test_rbf = np.exp(-gamma * pairwise_sq_dists)
+    x_test_kernel = np.hstack((np.arange(1, 2501).reshape((2500, 1)), np.add(test_linear, test_rbf)))
+
+    return x_train_kernel, x_test_kernel
+
+def SVM(x_train, y_train, x_test, y_test, best_pair):
+    prob  = svm_problem(y_train, x_train, isKernel=True)
+    param = svm_parameter('-s 0 -t 4 -c {} -g {} -q'.format(best_pair[0], best_pair[1]))          
+    model = svm_train(prob, param)
+    prediction = svm_predict(y_test, x_test, model)
+
 if __name__ == '__main__':
     x_train, y_train, x_test, y_test = read_csv()
+    best_pair = [16, 0.03125]                                         #from hw5_2_2.py 
+    x_train_kernel, x_test_kernel = combine_kernel(x_train, x_test, best_pair)
+    SVM(x_train_kernel, y_train, x_test_kernel, y_test, best_pair)

@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 num = 100
 epochs = 15
 K = 2
-gamma_c = 0.02
-gamma_s = 0.002
+gamma_c = 1
+gamma_s = 0.01
 
 def read_input(filename):
     img = Image.open(filename)
@@ -146,24 +146,24 @@ def ratio_cut(pixel, coord):
     return U
     
 if __name__ == '__main__':
-    filename = 'data/image1.png'
-    storename = 'visualization/image1_spectral_'
-    pixel1, coord1 = read_input(filename)
-    T = normalized_cut(pixel1, coord1)
-    K_Means(T, filename, storename)
+    # filename = 'data/image1.png'
+    # storename = 'visualization/image1_spectral_'
+    # pixel1, coord1 = read_input(filename)
+    # T = normalized_cut(pixel1, coord1)
+    # K_Means(T, filename, storename)
 
-    filename = 'data/image2.png'
-    storename = 'visualization/image2_spectral_'
-    pixel2, coord2 = read_input(filename)
-    T = normalized_cut(pixel2, coord2)
-    K_Means(T, filename, storename)
+    # filename = 'data/image2.png'
+    # storename = 'visualization/image2_spectral_'
+    # pixel2, coord2 = read_input(filename)
+    # T = normalized_cut(pixel2, coord2)
+    # K_Means(T, filename, storename)
 
     ###########################################################
 
-    # filename = 'data/image1.png'
-    # storename = 'visualization/image1_spectral_ratio_'
-    # pixel1, coord1 = read_input(filename)
-    # print("pixel shape = {}".format(pixel1.shape))
-    # print("coord1 shape = {}".format(coord1.shape))
-    # U = ratio_cut(pixel1, coord1)
-    # K_Means(U, filename, storename)
+    filename = 'data/image1.png'
+    storename = 'visualization/image1_spectral_ratio_'
+    pixel1, coord1 = read_input(filename)
+    print("pixel shape = {}".format(pixel1.shape))
+    print("coord1 shape = {}".format(coord1.shape))
+    U = ratio_cut(pixel1, coord1)
+    K_Means(U, filename, storename)

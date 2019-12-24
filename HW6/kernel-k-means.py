@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 num = 100
 epochs = 15
 K = 3
-gamma_c = 0.02
-gamma_s = 0.002
+gamma_c = 1/(255*255)
+gamma_s = 1/(100*100)
 
 def read_input(filename):
     img = Image.open(filename)
@@ -29,14 +29,14 @@ def initial(data, initial_method = 'random'):
     C = np.array(list(zip(C_x, C_y)), dtype=np.float32)
     mu = np.random.randn(K, 2)
     if initial_method == 'random':
-        prev_classification = np.random.randint(2, size=data.shape[0])
+        prev_classification = np.random.randint(K, size=data.shape[0])
+        return C, mu, prev_classification
     elif initial_method == 'modK':
         prev_classification = []
         for i in range(data.shape[0]):
             prev_classification.append(i%K)
         prev_classification = np.asarray(prev_classification)
-
-    return C, mu, prev_classification
+        return C, mu, prev_classification
 
 def compute_kernel(color, coord):
     spatial_sq_dists = squareform(pdist(coord, 'sqeuclidean'))
@@ -101,14 +101,14 @@ def visualization(filename, storename, iteration, classification, initial_method
     img = Image.open(filename)
     width, height = img.size
     pixel = img.load()
-    color = [(0,0,0), (100, 0, 0), (255,255,255)]
+    color = [(0,0,0), (100, 0, 0), (0, 255, 0), (255,255,255)]
     for i in range(img.size[0]):
         for j in range(img.size[1]):
             pixel[i, j] = color[classification[i * num + j]]
     img.save(storename + '_' + initial_method + '_' + str(gamma_c) + '_' + str(gamma_s) + '_' + str(iteration) + '.png')
 
 def Kernel_K_Means(filename, storename, data, coord):
-    initial_method = 'random'
+    initial_method = 'modK'
     C, mu, classification = initial(data)
     kernel_data = compute_kernel(data, coord)
     iteration = 0

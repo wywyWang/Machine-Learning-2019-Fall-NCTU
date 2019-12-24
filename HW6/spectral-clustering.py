@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 num = 100
 epochs = 15
 K = 3
-gamma_c = 0.0001
-gamma_s = 0.0001
+gamma_c = 1/(255*255)
+gamma_s = 1/(100*100)
 
 def read_input(filename):
     img = Image.open(filename)
@@ -41,14 +41,15 @@ def initial(data, initial_method = 'random'):
         C_z = np.random.randint(0, num, size=K)
         mu = np.array(list(zip(C_x, C_y, C_z)), dtype=np.float32)
         prev_classification = np.random.randint(K, size=data.shape[0])
+        return mu, prev_classification
     elif initial_method == 'modK':
         prev_classification = []
         for i in range(data.shape[0]):
             prev_classification.append(i%K)
         prev_classification = np.asarray(prev_classification)
+        return mu, prev_classification
 
-    return mu, prev_classification
-
+    
 def classify(data, mu):
     classification = np.zeros(data.shape[0], dtype=np.int)
     for dataidx in range(data.shape[0]):
@@ -71,11 +72,23 @@ def visualization(filename, storename, iteration, classification, initial_method
     img = Image.open(filename)
     width, height = img.size
     pixel = img.load()
-    color = [(0,0,0), (100, 0, 0), (255,255,255)]
+    color = [(0,0,0), (100, 0, 0), (0, 255, 0), (255,255,255)]
     for i in range(img.size[0]):
         for j in range(img.size[1]):
             pixel[i, j] = color[classification[i * num + j]]
     img.save(storename + '_' + initial_method + '_' + str(gamma_c) + '_' + str(gamma_s) + '_' + str(iteration) + '.png')
+
+def draw_eigenspace(filename, storename, iteration, classification, initial_method, data):
+    color = iter(plt.cm.rainbow(np.linspace(0, 1, K)))
+    plt.clf()
+    title = "Spectral-Clustering in Eigen-Space"
+    plt.suptitle(title)
+    for i in range(K):
+        col = next(color)
+        for j in range(0, data.shape[0]):
+            if classification[j] == i:
+                plt.scatter(data[j][0], data[j][1], s=8, c=[col])
+    plt.savefig(storename + '_' + initial_method + '_' + str(gamma_c) + '_' + str(gamma_s) + '_' + 'eigenspace' + '.png')
 
 def update(data, mu, classification):
     new_mu = np.zeros(mu.shape, dtype=np.float32)
@@ -91,7 +104,7 @@ def update(data, mu, classification):
     return np.true_divide(new_mu, count)
 
 def K_Means(data, filename, storename):
-    initial_method = 'random'
+    initial_method = 'modK'
     mu, classification = initial(data)
     iteration = 0
     error = -10000
@@ -112,7 +125,7 @@ def K_Means(data, filename, storename):
         prev_error = error
         mu = update(data, mu, classification)
     
-    print(classification)
+    draw_eigenspace(filename, storename, iteration, classification, initial_method, data)
 
 def normalized_cut(pixel, coord):
     weight = compute_kernel(pixel, coord)
@@ -147,17 +160,17 @@ def ratio_cut(pixel, coord):
     return U
     
 if __name__ == '__main__':
-    # filename = 'data/image1.png'
-    # storename = 'visualization/image1_spectral_'
-    # pixel1, coord1 = read_input(filename)
-    # T = normalized_cut(pixel1, coord1)
-    # K_Means(T, filename, storename)
+    filename = 'data/image1.png'
+    storename = 'visualization/image1_spectral_'
+    pixel1, coord1 = read_input(filename)
+    T = normalized_cut(pixel1, coord1)
+    K_Means(T, filename, storename)
 
-    # filename = 'data/image2.png'
-    # storename = 'visualization/image2_spectral_'
-    # pixel2, coord2 = read_input(filename)
-    # T = normalized_cut(pixel2, coord2)
-    # K_Means(T, filename, storename)
+    filename = 'data/image2.png'
+    storename = 'visualization/image2_spectral_'
+    pixel2, coord2 = read_input(filename)
+    T = normalized_cut(pixel2, coord2)
+    K_Means(T, filename, storename)
 
     ###########################################################
 

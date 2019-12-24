@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 
 num = 100
 epochs = 15
-K = 2
-gamma_c = 1
-gamma_s = 0.01
+K = 3
+gamma_c = 0.0001
+gamma_s = 0.0001
 
 def read_input(filename):
     img = Image.open(filename)
@@ -38,7 +38,8 @@ def initial(data, initial_method = 'random'):
     if initial_method == 'random':
         C_x = np.random.randint(0, num, size=K)
         C_y = np.random.randint(0, num, size=K)
-        mu = np.array(list(zip(C_x, C_y)), dtype=np.float32)
+        C_z = np.random.randint(0, num, size=K)
+        mu = np.array(list(zip(C_x, C_y, C_z)), dtype=np.float32)
         prev_classification = np.random.randint(K, size=data.shape[0])
     elif initial_method == 'modK':
         prev_classification = []
@@ -166,4 +167,12 @@ if __name__ == '__main__':
     print("pixel shape = {}".format(pixel1.shape))
     print("coord1 shape = {}".format(coord1.shape))
     U = ratio_cut(pixel1, coord1)
+    K_Means(U, filename, storename)
+
+    filename = 'data/image2.png'
+    storename = 'visualization/image2_spectral_ratio_'
+    pixel2, coord2 = read_input(filename)
+    print("pixel shape = {}".format(pixel2.shape))
+    print("coord1 shape = {}".format(coord2.shape))
+    U = ratio_cut(pixel2, coord2)
     K_Means(U, filename, storename)

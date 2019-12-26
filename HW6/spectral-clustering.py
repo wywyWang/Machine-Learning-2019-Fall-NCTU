@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 num = 100
 epochs = 15
-K = 3
+K = 2
 gamma_c = 1/(255*255)
 gamma_s = 1/(100*100)
 
@@ -34,12 +34,21 @@ def compute_kernel(color, coord):
 
     return kernel
 
-def initial(data, initial_method = 'random'):
+def initial(data, initial_method):
     if initial_method == 'random':
         C_x = np.random.randint(0, num, size=K)
         C_y = np.random.randint(0, num, size=K)
-        C_z = np.random.randint(0, num, size=K)
-        mu = np.array(list(zip(C_x, C_y, C_z)), dtype=np.float32)
+        mu = np.array([])
+        if K == 3:
+            C_z = np.random.randint(0, num, size=K)
+            mu = np.array(list(zip(C_x, C_y, C_z)), dtype=np.float32)
+        elif K == 4:
+            C_z = np.random.randint(0, num, size=K)
+            C_w = np.random.randint(0, num, size=K)
+            mu = np.array(list(zip(C_x, C_y, C_z, C_w)), dtype=np.float32)
+        else:
+            mu = np.array(list(zip(C_x, C_y)), dtype=np.float32)
+        
         prev_classification = np.random.randint(K, size=data.shape[0])
         return mu, prev_classification
     elif initial_method == 'modK':
@@ -48,7 +57,18 @@ def initial(data, initial_method = 'random'):
             prev_classification.append(i%K)
         prev_classification = np.asarray(prev_classification)
         return mu, prev_classification
-
+    elif initial_method == 'Kmeans++':
+        means = np.zeros([K, 2], dtype=np.float32)
+        first_cluster = np.random.randint(low=0, high=data.shape[0], size=1, dtype=np.int)
+        mu[0,:] = data[first_cluster,:]
+        for i in range(1,K):
+            distance = np.zeros(data.shape[0], dtype=np.float32)
+            for i in range(0, data.shape[0]):
+                distance[i] = np.linalg.norm(data[i,:] - mu[0,:])
+            distance = distance / distance.sum()
+            distance = np.random.choice(data.shape[0], 1, p=distance)
+            means[i,:] = data[distance,:]
+        return mu, prev_classification
     
 def classify(data, mu):
     classification = np.zeros(data.shape[0], dtype=np.int)
@@ -75,7 +95,7 @@ def visualization(filename, storename, iteration, classification, initial_method
     color = [(0,0,0), (100, 0, 0), (0, 255, 0), (255,255,255)]
     for i in range(img.size[0]):
         for j in range(img.size[1]):
-            pixel[i, j] = color[classification[i * num + j]]
+            pixel[j, i] = color[classification[i * num + j]]
     img.save(storename + '_' + initial_method + '_' + str(gamma_c) + '_' + str(gamma_s) + '_' + str(iteration) + '.png')
 
 def draw_eigenspace(filename, storename, iteration, classification, initial_method, data):
@@ -83,10 +103,10 @@ def draw_eigenspace(filename, storename, iteration, classification, initial_meth
     plt.clf()
     title = "Spectral-Clustering in Eigen-Space"
     plt.suptitle(title)
-    for i in range(K):
+    for cluster in range(K):
         col = next(color)
         for j in range(0, data.shape[0]):
-            if classification[j] == i:
+            if classification[j] == cluster:
                 plt.scatter(data[j][0], data[j][1], s=8, c=[col])
     plt.savefig(storename + '_' + initial_method + '_' + str(gamma_c) + '_' + str(gamma_s) + '_' + 'eigenspace' + '.png')
 
@@ -104,28 +124,30 @@ def update(data, mu, classification):
     return np.true_divide(new_mu, count)
 
 def K_Means(data, filename, storename):
-    initial_method = 'modK'
-    mu, classification = initial(data)
-    iteration = 0
-    error = -10000
-    prev_error = -10001
-    print("mu = {}".format(mu))
+    method = ['random', 'modK', 'Kmeans++']
+    for initial_method in method:
+        print("Initial method: {}".format(initial_method))
+        mu, classification = initial(data, initial_method)
+        iteration = 0
+        error = -10000
+        prev_error = -10001
+        print("mu = {}".format(mu))
 
-    while(iteration < epochs):
-        iteration += 1
-        print("iteration = {}".format(iteration))
-        print("current mu = {}".format(mu))
-        prev_classification = classification
-        classification = classify(data, mu)
-        error = calculate_error(classification, prev_classification)
-        print("error = {}".format(error))
-        visualization(filename, storename, iteration, classification, initial_method)
-        if error == prev_error:
-            break
-        prev_error = error
-        mu = update(data, mu, classification)
-    
-    draw_eigenspace(filename, storename, iteration, classification, initial_method, data)
+        while(iteration <= epochs):
+            iteration += 1
+            print("iteration = {}".format(iteration))
+            print("current mu = {}".format(mu))
+            prev_classification = classification
+            visualization(filename, storename, iteration, classification, initial_method)
+            classification = classify(data, mu)
+            error = calculate_error(classification, prev_classification)
+            print("error = {}".format(error))
+            if error == prev_error:
+                break
+            prev_error = error
+            mu = update(data, mu, classification)
+        
+        draw_eigenspace(filename, storename, iteration, classification, initial_method, data)
 
 def normalized_cut(pixel, coord):
     weight = compute_kernel(pixel, coord)
@@ -173,19 +195,16 @@ if __name__ == '__main__':
     K_Means(T, filename, storename)
 
     ###########################################################
+    print("===================================================")
 
     filename = 'data/image1.png'
     storename = 'visualization/image1_spectral_ratio_'
     pixel1, coord1 = read_input(filename)
-    print("pixel shape = {}".format(pixel1.shape))
-    print("coord1 shape = {}".format(coord1.shape))
     U = ratio_cut(pixel1, coord1)
     K_Means(U, filename, storename)
 
     filename = 'data/image2.png'
     storename = 'visualization/image2_spectral_ratio_'
     pixel2, coord2 = read_input(filename)
-    print("pixel shape = {}".format(pixel2.shape))
-    print("coord1 shape = {}".format(coord2.shape))
     U = ratio_cut(pixel2, coord2)
     K_Means(U, filename, storename)

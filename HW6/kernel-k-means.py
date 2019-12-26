@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 num = 100
 epochs = 15
-K = 3
+K = 2
 gamma_c = 1/(255*255)
 gamma_s = 1/(100*100)
 
@@ -23,7 +23,7 @@ def read_input(filename):
 
     return pixel, coord
 
-def initial(data, initial_method = 'random'):
+def initial(data, initial_method):
     C_x = np.random.randint(0, num, size=K)
     C_y = np.random.randint(0, num, size=K)
     C = np.array(list(zip(C_x, C_y)), dtype=np.float32)
@@ -37,6 +37,15 @@ def initial(data, initial_method = 'random'):
             prev_classification.append(i%K)
         prev_classification = np.asarray(prev_classification)
         return C, mu, prev_classification
+    elif initial_method == 'equal-divide':
+        prev_classification = []
+        for i in range(data.shape[0]):
+            if i < (num * num / K):
+                prev_classification.append(0)
+            else:
+                prev_classification.append(1)
+        prev_classification = np.asarray(prev_classification)
+        return C, mu, prev_classification       
 
 def compute_kernel(color, coord):
     spatial_sq_dists = squareform(pdist(coord, 'sqeuclidean'))
@@ -104,33 +113,32 @@ def visualization(filename, storename, iteration, classification, initial_method
     color = [(0,0,0), (100, 0, 0), (0, 255, 0), (255,255,255)]
     for i in range(img.size[0]):
         for j in range(img.size[1]):
-            pixel[i, j] = color[classification[i * num + j]]
+            pixel[j, i] = color[classification[i * num + j]]
     img.save(storename + '_' + initial_method + '_' + str(gamma_c) + '_' + str(gamma_s) + '_' + str(iteration) + '.png')
 
 def Kernel_K_Means(filename, storename, data, coord):
-    initial_method = 'modK'
-    C, mu, classification = initial(data)
-    kernel_data = compute_kernel(data, coord)
-    iteration = 0
-    error = -10000
-    prev_error = -10001
-    print("mu = {}".format(mu))
-    print("classification shape = {}".format(classification.shape))
+    method = ['random', 'modK', 'equal-divide']
+    for initial_method in method:
+        C, mu, classification = initial(data, initial_method)
+        kernel_data = compute_kernel(data, coord)
+        iteration = 0
+        error = -10000
+        prev_error = -10001
+        print("mu = {}".format(mu))
+        print("classification shape = {}".format(classification.shape))
 
-    while(iteration < epochs):
-        iteration += 1
-        print("iteration = {}".format(iteration))
-        prev_classification = classification
-        classification = classify(data, kernel_data, mu, classification)
-        error = calculate_error(classification, prev_classification)
-        print("error = {}".format(error))
-        visualization(filename, storename, iteration, classification, initial_method)
+        while(iteration <= epochs):
+            iteration += 1
+            print("iteration = {}".format(iteration))
+            prev_classification = classification
+            visualization(filename, storename, iteration, classification, initial_method)
+            classification = classify(data, kernel_data, mu, classification)
+            error = calculate_error(classification, prev_classification)
+            print("error = {}".format(error))
 
-        if error == prev_error:
-            break
-        prev_error = error
-    
-    print(classification)
+            if error == prev_error:
+                break
+            prev_error = error
 
 if __name__ == '__main__':
     filename = 'data/image1.png'

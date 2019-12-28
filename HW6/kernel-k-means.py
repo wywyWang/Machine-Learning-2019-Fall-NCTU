@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 num = 100
 epochs = 15
-K = 2
+K = 4
 gamma_c = 1/(255*255)
 gamma_s = 1/(100*100)
 
@@ -39,11 +39,9 @@ def initial(data, initial_method):
         return C, mu, prev_classification
     elif initial_method == 'equal-divide':
         prev_classification = []
+        border = num * num / K
         for i in range(data.shape[0]):
-            if i < (num * num / K):
-                prev_classification.append(0)
-            else:
-                prev_classification.append(1)
+            prev_classification.append(int(i / border))
         prev_classification = np.asarray(prev_classification)
         return C, mu, prev_classification       
 
@@ -114,7 +112,7 @@ def visualization(filename, storename, iteration, classification, initial_method
     for i in range(img.size[0]):
         for j in range(img.size[1]):
             pixel[j, i] = color[classification[i * num + j]]
-    img.save(storename + '_' + initial_method + '_' + str(gamma_c) + '_' + str(gamma_s) + '_' + str(iteration) + '.png')
+    img.save(storename + '_' + initial_method + '_' + str(gamma_c) + '_' + str(gamma_s) + '_' + str(iteration) + '_'+ str(K) + '.png')
 
 def Kernel_K_Means(filename, storename, data, coord):
     method = ['random', 'modK', 'equal-divide']

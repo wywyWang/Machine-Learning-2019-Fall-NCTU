@@ -35,6 +35,7 @@ def compute_kernel(color, coord):
     return kernel
 
 def initial(data, initial_method):
+    prev_classification = np.random.randint(K, size=data.shape[0])
     if initial_method == 'random':
         C_x = np.random.randint(0, num, size=K)
         C_y = np.random.randint(0, num, size=K)
@@ -48,26 +49,24 @@ def initial(data, initial_method):
             mu = np.array(list(zip(C_x, C_y, C_z, C_w)), dtype=np.float32)
         else:
             mu = np.array(list(zip(C_x, C_y)), dtype=np.float32)
-        
-        prev_classification = np.random.randint(K, size=data.shape[0])
         return mu, prev_classification
-    elif initial_method == 'modK':
-        prev_classification = []
-        for i in range(data.shape[0]):
-            prev_classification.append(i%K)
-        prev_classification = np.asarray(prev_classification)
+    elif initial_method == 'random-from-data':
+        candidate = np.random.randint(low=0, high=data.shape[0], size=K)
+        mu = np.zeros([K, 2], dtype=np.float32)
+        for i in range(K):
+            mu[i,:] = data[candidate[i],:]
         return mu, prev_classification
     elif initial_method == 'Kmeans++':
-        means = np.zeros([K, 2], dtype=np.float32)
+        mu = np.zeros([K, 2], dtype=np.float32)
         first_cluster = np.random.randint(low=0, high=data.shape[0], size=1, dtype=np.int)
         mu[0,:] = data[first_cluster,:]
         for i in range(1,K):
             distance = np.zeros(data.shape[0], dtype=np.float32)
-            for i in range(0, data.shape[0]):
-                distance[i] = np.linalg.norm(data[i,:] - mu[0,:])
+            for j in range(0, data.shape[0]):
+                distance[j] = np.linalg.norm(data[j,:] - mu[0,:])
             distance = distance / distance.sum()
-            distance = np.random.choice(data.shape[0], 1, p=distance)
-            means[i,:] = data[distance,:]
+            candidate = np.random.choice(data.shape[0], 1, p=distance)
+            mu[i,:] = data[candidate,:]
         return mu, prev_classification
     
 def classify(data, mu):
@@ -96,7 +95,7 @@ def visualization(filename, storename, iteration, classification, initial_method
     for i in range(img.size[0]):
         for j in range(img.size[1]):
             pixel[j, i] = color[classification[i * num + j]]
-    img.save(storename + '_' + initial_method + '_' + str(gamma_c) + '_' + str(gamma_s) + '_' + str(iteration) + '.png')
+    img.save(storename + '_' + initial_method + '_' + str(gamma_c) + '_' + str(gamma_s) + '_' + str(iteration) + '_'+ str(K) + '.png')
 
 def draw_eigenspace(filename, storename, iteration, classification, initial_method, data):
     color = iter(plt.cm.rainbow(np.linspace(0, 1, K)))
@@ -108,7 +107,7 @@ def draw_eigenspace(filename, storename, iteration, classification, initial_meth
         for j in range(0, data.shape[0]):
             if classification[j] == cluster:
                 plt.scatter(data[j][0], data[j][1], s=8, c=[col])
-    plt.savefig(storename + '_' + initial_method + '_' + str(gamma_c) + '_' + str(gamma_s) + '_' + 'eigenspace' + '.png')
+    plt.savefig(storename + '_' + initial_method + '_' + str(gamma_c) + '_' + str(gamma_s) + '_' + 'eigenspace' + '_'+ str(K) + '.png')
 
 def update(data, mu, classification):
     new_mu = np.zeros(mu.shape, dtype=np.float32)
@@ -124,7 +123,7 @@ def update(data, mu, classification):
     return np.true_divide(new_mu, count)
 
 def K_Means(data, filename, storename):
-    method = ['random', 'modK', 'Kmeans++']
+    method = ['random', 'random-from-data', 'Kmeans++']
     for initial_method in method:
         print("Initial method: {}".format(initial_method))
         mu, classification = initial(data, initial_method)

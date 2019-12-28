@@ -52,12 +52,12 @@ def initial(data, initial_method):
         return mu, prev_classification
     elif initial_method == 'random-from-data':
         candidate = np.random.randint(low=0, high=data.shape[0], size=K)
-        mu = np.zeros([K, 2], dtype=np.float32)
+        mu = np.zeros([K, K], dtype=np.float32)
         for i in range(K):
             mu[i,:] = data[candidate[i],:]
         return mu, prev_classification
     elif initial_method == 'Kmeans++':
-        mu = np.zeros([K, 2], dtype=np.float32)
+        mu = np.zeros([K, K], dtype=np.float32)
         first_cluster = np.random.randint(low=0, high=data.shape[0], size=1, dtype=np.int)
         mu[0,:] = data[first_cluster,:]
         for i in range(1,K):

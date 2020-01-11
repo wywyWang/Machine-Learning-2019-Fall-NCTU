@@ -1,4 +1,5 @@
 *.png
 *.docx
-ML_HW5*.*
+ML_HW*.*
 visualization/
+Yale_Face_Database/

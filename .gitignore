@@ -2,4 +2,5 @@
 *.docx
 ML_HW*.*
 visualization/
-Yale_Face_Database/
+Training/
+Testing/

@@ -6,7 +6,6 @@ import os
 import re
 
 SHAPE = (60, 60)
-PICK = 10
 
 
 def read_input(dirname):
@@ -53,21 +52,55 @@ def visualization(dirname, totalfile, data):
         img = img.resize(SHAPE, Image.ANTIALIAS)
         width, height = img.size
         pixel = img.load()
-        # print("data[idx].reshape(width, height)= {}".format(data[idx].reshape(width, height)))
         pixel = data[idx].reshape(width, height).copy()
-        # for w in range(img.size[0]):
-        #     for h in range(img.size[1]):
-        #         pixel[h, w] = data[j, i]
         img.save(storename + '.png')
         idx += 1
 
 
+def draweigenface(dirname, totalfile, eigen_vectors):
+    title = "Eigen-Face" + '_'
+    eigen_vectors = eigen_vectors.T
+    for i in range(0, 25):
+        plt.clf()
+        plt.suptitle(title + str(i))
+        plt.imshow(eigen_vectors[i].reshape(SHAPE), plt.cm.gray)
+        plt.show()
+        plt.savefig('./PCA_result/' + title + str(i) + '.png')
+
+
+def KNN(traindata, testdata, target):
+    result = np.zeros(testdata.shape[0])
+    for testidx in range(testdata.shape[0]):
+        alldist = np.zeros(traindata.shape[0])
+        for trainidx in range(traindata.shape[0]):
+            alldist[trainidx] = np.sqrt(np.sum((testdata[testidx] - traindata[trainidx]) ** 2))
+        result[testidx] = target[np.argmin(alldist)]
+    return result
+
+
+def checkperformance(targettest, predict):
+    correct = 0
+    for i in range(len(targettest)):
+        if targettest[i] == predict[i]:
+            correct += 1
+    print("Accuracy of PCA = {}".format(correct / len(targettest)))
+
+
 if __name__ == '__main__':
-    dirname = './Training/'
-    data, target, totalfile = read_input(dirname)
+    dirtrain = './Training/'
+    data, target, totalfile = read_input(dirtrain)
     lower_dimension_data, eigen_vectors = PCA(data)
     print("data shape = {}".format(data.shape))
+    print("eigen vector shape = {}".format(eigen_vectors.shape))
     print("lower_dimension_data shape: {}".format(lower_dimension_data.shape))
     reconstruct_data = np.matmul(lower_dimension_data, eigen_vectors.T)
     print("reconstruct_data shape: {}".format(reconstruct_data.shape))
-    visualization(dirname, totalfile, reconstruct_data)
+    visualization(dirtrain, totalfile, reconstruct_data)
+    draweigenface(dirtrain, totalfile, eigen_vectors)
+
+    dirtest = './Testing/'
+    datatest, targettest, totalfiletest = read_input(dirtest)
+    lower_dimension_data_test = np.matmul(datatest, eigen_vectors)
+    print("lower_dimension_data_test shape: {}".format(lower_dimension_data_test.shape))
+    predict = KNN(lower_dimension_data, lower_dimension_data_test, target)
+    checkperformance(targettest, predict)

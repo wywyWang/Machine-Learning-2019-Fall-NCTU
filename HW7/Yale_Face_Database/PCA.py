@@ -51,7 +51,7 @@ def visualization(dirname, totalfile, storedir, data):
         idx += 1
 
 
-def draweigenface(dirname, totalfile, storedir, eigen_vectors):
+def draweigenface(storedir, eigen_vectors):
     title = "Eigen-Face" + '_'
     eigen_vectors = eigen_vectors.T
     for i in range(0, 25):
@@ -63,10 +63,12 @@ def draweigenface(dirname, totalfile, storedir, eigen_vectors):
 
 
 def KNN(traindata, testdata, target):
-    result = np.zeros(testdata.shape[0])
-    for testidx in range(testdata.shape[0]):
-        alldist = np.zeros(traindata.shape[0])
-        for trainidx in range(traindata.shape[0]):
+    trainsize = traindata.shape[0]
+    testsize = testdata.shape[0]
+    result = np.zeros(testsize)
+    for testidx in range(testsize):
+        alldist = np.zeros(trainsize)
+        for trainidx in range(trainsize):
             alldist[trainidx] = np.sqrt(np.sum((testdata[testidx] - traindata[trainidx]) ** 2))
         result[testidx] = target[np.argmin(alldist)]
     return result
@@ -77,7 +79,7 @@ def checkperformance(targettest, predict):
     for i in range(len(targettest)):
         if targettest[i] == predict[i]:
             correct += 1
-    print("Accuracy of PCA = {}".format(correct / len(targettest)))
+    print("Accuracy of PCA = {}  ({} / {})".format(correct / len(targettest), correct, len(targettest)))
 
 
 def PCA(data):
@@ -90,24 +92,23 @@ def PCA(data):
 def kernelPCA(data, method):
     eigen_vectors = None
     if method == 'rbf':
-        sq_dists = squareform(pdist(data.T), 'sqeuclidean')
+        sq_dists = squareform(pdist(data), 'sqeuclidean')
         gram_matrix = np.exp(-gamma * sq_dists)
         N = gram_matrix.shape[0]
         one_n = np.ones((N, N)) / N
         K = gram_matrix - one_n.dot(gram_matrix) - gram_matrix.dot(one_n) + one_n.dot(gram_matrix).dot(one_n)
         eigen_vectors = compute_eigen(K)
     elif method == 'linear':
-        gram_matrix = np.matmul(data.T, data)
+        gram_matrix = np.matmul(data, data.T)
         N = gram_matrix.shape[0]
         one_n = np.ones((N, N)) / N
         K = gram_matrix - one_n.dot(gram_matrix) - gram_matrix.dot(one_n) + one_n.dot(gram_matrix).dot(one_n)
         eigen_vectors = compute_eigen(K)
-    print("kernel eigen_vectors = {}".format(eigen_vectors.shape))
-    lower_dimension_data = np.matmul(data, eigen_vectors)
-    return lower_dimension_data, eigen_vectors
+    return eigen_vectors
 
 
 if __name__ == '__main__':
+    #PCA
     dirtrain = './Training/'
     storedir = './PCA_result/'
     data, target, totalfile = read_input(dirtrain)
@@ -118,33 +119,37 @@ if __name__ == '__main__':
     reconstruct_data = np.matmul(lower_dimension_data, eigen_vectors.T)
     print("reconstruct_data shape: {}".format(reconstruct_data.shape))
     visualization(dirtrain, totalfile, storedir, reconstruct_data)
-    draweigenface(dirtrain, totalfile, storedir, eigen_vectors)
+    draweigenface(storedir, eigen_vectors)
 
+    #Face recognition
     dirtest = './Testing/'
     datatest, targettest, totalfiletest = read_input(dirtest)
-    lower_dimension_data_test = np.matmul(datatest, eigen_vectors)
+    data = np.concatenate((data, datatest), axis=0)
+    lower_dimension_data, eigen_vectors = PCA(data)
+    lower_dimension_data_test = lower_dimension_data[totalfile.shape[0]:].copy()
+    lower_dimension_data = lower_dimension_data[:totalfile.shape[0]].copy()
+    print("lower_dimension_data shape: {}".format(lower_dimension_data.shape))
     print("lower_dimension_data_test shape: {}".format(lower_dimension_data_test.shape))
     predict = KNN(lower_dimension_data, lower_dimension_data_test, target)
     checkperformance(targettest, predict)
 
     print("=======================================================================")
 
+    #Kernel PCA
     dirtrain = './Training/'
     storedir = './kernelPCA_result/'
-    method = 'linear'
+    method = 'rbf'
     data, target, totalfile = read_input(dirtrain)
-    lower_dimension_data, eigen_vectors = kernelPCA(data, method)
     print("data shape = {}".format(data.shape))
-    print("eigen vector shape = {}".format(eigen_vectors.shape))
-    print("lower_dimension_data shape: {}".format(lower_dimension_data.shape))
-    reconstruct_data = np.matmul(lower_dimension_data, eigen_vectors.T)
-    print("reconstruct_data shape: {}".format(reconstruct_data.shape))
-    visualization(dirtrain, totalfile, storedir, reconstruct_data)
-    draweigenface(dirtrain, totalfile, storedir, eigen_vectors)
 
+    #Face recognition
     dirtest = './Testing/'
     datatest, targettest, totalfiletest = read_input(dirtest)
-    lower_dimension_data_test = np.matmul(datatest, eigen_vectors)
+    data = np.concatenate((data, datatest), axis=0)
+    lower_dimension_data = kernelPCA(data, method)
+    lower_dimension_data_test = lower_dimension_data[totalfile.shape[0]:].copy()
+    lower_dimension_data = lower_dimension_data[:totalfile.shape[0]].copy()
+    print("lower_dimension_data shape: {}".format(lower_dimension_data.shape))
     print("lower_dimension_data_test shape: {}".format(lower_dimension_data_test.shape))
     predict = KNN(lower_dimension_data, lower_dimension_data_test, target)
     checkperformance(targettest, predict)

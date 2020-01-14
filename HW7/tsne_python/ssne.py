@@ -175,27 +175,31 @@ def ssne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
 
         # Stop lying about P-values
         if iter == 100:
+            visualization(Y, P, Q, iter, perplexity)
             P = P / 4.
+        if iter % 100 == 0:
+            visualization(Y, P, Q, iter, perplexity)
 
     # Return solution
     return Y, P, Q
 
 
-def visualization(Y, P, Q):
-    pylab.title('S-SNE')
+def visualization(Y, P, Q, iter, perplexity):
+    pylab.clf()
+    pylab.title('S-SNE_' + str(iter) + ' with perplexity : ' + str(perplexity))
     pylab.scatter(Y[:, 0], Y[:, 1], 20, labels)
     # pylab.show()
-    pylab.savefig('./result/S-SNE.png')
+    pylab.savefig('./result/S-SNE' + '_' + str(iter) + '_' + str(perplexity) + '.png')
 
     fig = plt.figure()
-    plt.title('High Dimensionality Similarity of S-SNE')
+    plt.title('High Dimensionality Similarity of S-SNE_' + str(iter) + ' with perplexity : ' + str(perplexity))
     plt.imshow(P, cmap='hot', interpolation='nearest')
-    fig.savefig('./result/S-SNE High-D.png')
+    fig.savefig('./result/S-SNE High-D' + '_' + str(iter) + '_' + str(perplexity) + '.png')
 
     fig = plt.figure()
-    plt.title('Low Dimensionality Similarity of S-SNE')
+    plt.title('Low Dimensionality Similarity of S-SNE_' + str(iter) + ' with perplexity : ' + str(perplexity))
     plt.imshow(Q, cmap='hot', interpolation='nearest')
-    fig.savefig('./result/S-SNE Low-D.png')
+    fig.savefig('./result/S-SNE Low-D' + '_' + str(iter) + '_' + str(perplexity) + '.png')
 
 
 if __name__ == "__main__":
@@ -204,4 +208,4 @@ if __name__ == "__main__":
     X = np.loadtxt("mnist2500_X.txt")
     labels = np.loadtxt("mnist2500_labels.txt")
     Y, P, Q = ssne(X, 2, 50, 20.0)
-    visualization(Y, P, Q)
+    # visualization(Y, P, Q)

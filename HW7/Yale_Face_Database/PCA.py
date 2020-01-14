@@ -58,7 +58,6 @@ def draweigenface(storedir, eigen_vectors):
         plt.clf()
         plt.suptitle(title + str(i))
         plt.imshow(eigen_vectors[i].reshape(SHAPE), plt.cm.gray)
-        plt.show()
         plt.savefig(storedir + title + str(i) + '.png')
 
 

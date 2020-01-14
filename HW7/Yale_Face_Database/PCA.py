@@ -52,7 +52,7 @@ def visualization(dirname, totalfile, storedir, data):
 
 
 def draweigenface(storedir, eigen_vectors):
-    title = "Eigen-Face" + '_'
+    title = "PCA Eigen-Face" + '_'
     eigen_vectors = eigen_vectors.T
     for i in range(0, 25):
         plt.clf()
@@ -89,7 +89,7 @@ def PCA(data):
 
 
 def kernelPCA(data, method):
-    eigen_vectors = None
+    lower_dimension_data = None
     if method == 'rbf':
         sq_dists = squareform(pdist(data), 'sqeuclidean')
         gram_matrix = np.exp(-gamma * sq_dists)
@@ -97,13 +97,15 @@ def kernelPCA(data, method):
         one_n = np.ones((N, N)) / N
         K = gram_matrix - one_n.dot(gram_matrix) - gram_matrix.dot(one_n) + one_n.dot(gram_matrix).dot(one_n)
         eigen_vectors = compute_eigen(K)
+        lower_dimension_data = np.matmul(gram_matrix, eigen_vectors)
     elif method == 'linear':
         gram_matrix = np.matmul(data, data.T)
         N = gram_matrix.shape[0]
         one_n = np.ones((N, N)) / N
         K = gram_matrix - one_n.dot(gram_matrix) - gram_matrix.dot(one_n) + one_n.dot(gram_matrix).dot(one_n)
         eigen_vectors = compute_eigen(K)
-    return eigen_vectors
+        lower_dimension_data = np.matmul(gram_matrix, eigen_vectors)
+    return lower_dimension_data
 
 
 if __name__ == '__main__':
@@ -137,7 +139,7 @@ if __name__ == '__main__':
     #Kernel PCA
     dirtrain = './Training/'
     storedir = './kernelPCA_result/'
-    method = 'rbf'
+    method = 'linear'
     data, target, totalfile = read_input(dirtrain)
     print("data shape = {}".format(data.shape))
 

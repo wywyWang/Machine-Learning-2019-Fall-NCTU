@@ -5,31 +5,31 @@ import matplotlib.pyplot as plt
 
 # py baysian_LR.py --B=1 --N=4 --S=1 --W 1 2 3 4
 
-def univariate_generator(mean,variance):
-    deviate = np.sum(np.random.uniform(0.0,1.0,12)) - 6
+def univariate_generator(mean, variance):
+    deviate = np.sum(np.random.uniform(0.0, 1.0, 12)) - 6
     return mean + deviate * math.sqrt(variance)
 
-def polynomial_basis_linear_model(given_n,given_w,given_variance,x):
+def polynomial_basis_linear_model(given_n, given_w, given_variance, x):
     y = 0.0
     for i in range(given_n):
-        y += given_w[i] * (x ** i)
+        y += given_w[i] * (x**i)
 
-    return np.array(y + univariate_generator(0,given_variance))
+    return np.array(y + univariate_generator(0, given_variance))
 
-def build_design_matrix(n,x):
+def build_design_matrix(n, x):
     A = []
     for i in range(n):
-        A.append(x ** i)
+        A.append(x**i)
 
     return np.array(A).reshape(1, -1)
 
 if __name__ == '__main__':
     #parse parameters
     parser = argparse.ArgumentParser()
-    parser.add_argument("--B", type = float  )
-    parser.add_argument("--N", type = int  )
-    parser.add_argument("--S", type = float  )
-    parser.add_argument("--W", nargs='+', type=float  )
+    parser.add_argument("--B", type=float)
+    parser.add_argument("--N", type=int)
+    parser.add_argument("--S", type=float)
+    parser.add_argument("--W", nargs='+', type=float)
     args = parser.parse_args()
 
     given_n = args.N
@@ -52,9 +52,9 @@ if __name__ == '__main__':
 
     prior_mean = given_mean
     prior_var_inv = given_precision
-    x = np.random.uniform(-1.0,1.0)
-    y = polynomial_basis_linear_model(given_n,given_w,given_variance,x)
-    design_matrix = build_design_matrix(given_n,x)
+    x = np.random.uniform(-1.0, 1.0)
+    y = polynomial_basis_linear_model(given_n, given_w, given_variance, x)
+    design_matrix = build_design_matrix(given_n, x)
     data_x.append(x)
     data_y.append(y)
 
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     predictive_distribution_mean = np.matmul(design_matrix, posterior_mean)
     predictive_distribution_variance = 1 / given_variance + np.matmul(np.matmul(design_matrix, np.linalg.inv(posterior_var_inv)), design_matrix.T)
 
-    print("Add data point ({}, {}):".format(x,y))
+    print("Add data point ({}, {}):".format(x, y))
     print("")
     print("Posterior mean:")
     print(posterior_mean)
@@ -77,22 +77,22 @@ if __name__ == '__main__':
 
     while True:
         count += 1
-        x = np.random.uniform(-1.0,1.0)
-        y = polynomial_basis_linear_model(given_n,given_w,given_variance,x)
+        x = np.random.uniform(-1.0, 1.0)
+        y = polynomial_basis_linear_model(given_n, given_w, given_variance, x)
         data_x.append(x)
         data_y.append(y)
 
-        design_matrix = build_design_matrix(given_n,x)
+        design_matrix = build_design_matrix(given_n, x)
         prior_mean = posterior_mean.copy()
         prior_var_inv = posterior_var_inv.copy()
 
-        posterior_var_inv = given_variance * np.matmul(design_matrix.T,design_matrix) + prior_var_inv
+        posterior_var_inv = given_variance * np.matmul(design_matrix.T, design_matrix) + prior_var_inv
         posterior_mean = np.matmul(np.linalg.inv(posterior_var_inv), (given_variance * design_matrix.T * y + np.matmul(prior_var_inv, prior_mean)))
         predictive_distribution_mean = np.matmul(design_matrix, posterior_mean)
         predictive_distribution_variance = 1 / given_variance + np.matmul(np.matmul(design_matrix, np.linalg.inv(posterior_var_inv)), design_matrix.T)
 
         print("Count = {}".format(count))
-        print("Add data point ({}, {}):".format(x,y))
+        print("Add data point ({}, {}):".format(x, y))
         print("")
         print("Posterior mean:")
         print(posterior_mean)
@@ -152,9 +152,9 @@ if __name__ == '__main__':
         predict_y_plus[i] += predict_predictive_distribution_variance[0]
         predict_y_minus[i] -= predict_predictive_distribution_variance[0]
 
-    plt.plot(predict_x, predict_y, color = 'black')
-    plt.plot(predict_x, predict_y_plus, color = 'red')
-    plt.plot(predict_x, predict_y_minus, color = 'red')
+    plt.plot(predict_x, predict_y, color='black')
+    plt.plot(predict_x, predict_y_plus, color='red')
+    plt.plot(predict_x, predict_y_minus, color='red')
     plt.scatter(data_x, data_y)
     fig.savefig('Predict result.png')
 
@@ -173,9 +173,9 @@ if __name__ == '__main__':
         predict_y_plus[i] += predict_predictive_distribution_variance[0]
         predict_y_minus[i] -= predict_predictive_distribution_variance[0]
 
-    plt.plot(predict_x, predict_y, color = 'black')
-    plt.plot(predict_x, predict_y_plus, color = 'red')
-    plt.plot(predict_x, predict_y_minus, color = 'red')
+    plt.plot(predict_x, predict_y, color='black')
+    plt.plot(predict_x, predict_y_plus, color='red')
+    plt.plot(predict_x, predict_y_minus, color='red')
     plt.scatter(ten_data_x, ten_data_y)
     fig.savefig('After 10 imcomes.png')
 
@@ -195,9 +195,9 @@ if __name__ == '__main__':
         predict_y_plus[i] += predict_predictive_distribution_variance[0]
         predict_y_minus[i] -= predict_predictive_distribution_variance[0]
 
-    plt.plot(predict_x, predict_y, color = 'black')
-    plt.plot(predict_x, predict_y_plus, color = 'red')
-    plt.plot(predict_x, predict_y_minus, color = 'red')
+    plt.plot(predict_x, predict_y, color='black')
+    plt.plot(predict_x, predict_y_plus, color='red')
+    plt.plot(predict_x, predict_y_minus, color='red')
     plt.scatter(fifty_data_x, fifty_data_y)
     fig.savefig('After 50 imcomes.png')
 

@@ -54,9 +54,9 @@ def draw(train_x, train_y, test_x, test_y, test_y_minus, test_y_plus, params, mo
     plt.title("Gaussian Process with scalelength : {0:.2f} sigma : {1:.2f} alpha : {2:.2f}".format(params[0], params[1], params[2]))
     plt.fill_between(test_x.ravel(), test_y_plus.ravel(), test_y_minus.ravel(), facecolor='pink')
     plt.scatter(train_x, train_y, color = 'black')
-    plt.plot(test_x.ravel(), test_y.ravel(), color = 'blue')
-    plt.plot(test_x.ravel(), test_y_plus.ravel(), color = 'red')
-    plt.plot(test_x.ravel(), test_y_minus.ravel(), color = 'red')
+    plt.plot(test_x.ravel(), test_y.ravel(), color='blue')
+    plt.plot(test_x.ravel(), test_y_plus.ravel(), color='red')
+    plt.plot(test_x.ravel(), test_y_minus.ravel(), color='red')
     plt.xlim(-60, 60)
     fig.savefig("GP" + mode + ".png")
 

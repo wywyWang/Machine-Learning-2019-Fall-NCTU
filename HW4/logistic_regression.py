@@ -8,14 +8,17 @@ np.seterr(divide='ignore', invalid='ignore')
 # py logistic_regression.py --N=50 --MX1=1 --MY1=1 --MX2=10 --MY2=10 --VX1=2 --VY1=2 --VX2=2 --VY2=2
 # py logistic_regression.py --N=50 --MX1=1 --MY1=1 --MX2=3 --MY2=3 --VX1=2 --VY1=2 --VX2=4 --VY2=4
 
-def univariate_generator(mean,variance):
-    deviate = np.sum(np.random.uniform(0,1,12)) - 6
+SEED = 41
+np.random.seed(SEED)
+
+def univariate_generator(mean, variance):
+    deviate = np.sum(np.random.uniform(0, 1, 12)) - 6
     return mean + deviate * math.sqrt(variance)
 
 def sigmoid(z):
     result = []
     for i in range(np.shape(z)[0]):
-        # print(z[i][0])
+        # BUG: need to set a value to avoid overflow
         sigmoid_result = 1 / (1 + np.exp((-1) * z[i]))
         result.append(sigmoid_result)
 
@@ -65,15 +68,15 @@ def confusion_matrix(predict):
 if __name__ == '__main__':
     #parse parameters
     parser = argparse.ArgumentParser()
-    parser.add_argument("--N", type = int  )
-    parser.add_argument("--MX1", type = float  )
-    parser.add_argument("--VX1", type = float  )
-    parser.add_argument("--MY1", type = float  )
-    parser.add_argument("--VY1", type = float  )
-    parser.add_argument("--MX2", type = float  )
-    parser.add_argument("--VX2", type = float  )
-    parser.add_argument("--MY2", type = float  )
-    parser.add_argument("--VY2", type = float  )
+    parser.add_argument("--N", type=int)
+    parser.add_argument("--MX1", type=float)
+    parser.add_argument("--VX1", type=float)
+    parser.add_argument("--MY1", type=float)
+    parser.add_argument("--VY1", type=float)
+    parser.add_argument("--MX2", type=float)
+    parser.add_argument("--VX2", type=float)
+    parser.add_argument("--MY2", type=float)
+    parser.add_argument("--VY2", type=float)
     args = parser.parse_args()
     given_N = args.N
     given_MX1 = args.MX1
@@ -95,16 +98,16 @@ if __name__ == '__main__':
     y = []
 
     for i in range(given_N):
-        dx1 = univariate_generator(given_MX1,given_VX1)
-        dy1 = univariate_generator(given_MY1,given_VY1)
+        dx1 = univariate_generator(given_MX1, given_VX1)
+        dy1 = univariate_generator(given_MY1, given_VY1)
         design_matrix.append([1, dx1, dy1])
         y.append(0)
         D1.append([dx1, dy1])
         D1y.append(0)
 
     for i in range(given_N):
-        dx2 = univariate_generator(given_MX2,given_VX2)
-        dy2 = univariate_generator(given_MY2,given_VY2)
+        dx2 = univariate_generator(given_MX2, given_VX2)
+        dy2 = univariate_generator(given_MY2, given_VY2)
         design_matrix.append([1, dx2, dy2])
         y.append(1)
         D2.append([dx2, dy2])

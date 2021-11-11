@@ -1,13 +1,12 @@
 from PIL import Image
 import numpy as np
-from scipy.spatial.distance import cdist, pdist, squareform
-import matplotlib.pyplot as plt
+from scipy.spatial.distance import pdist, squareform
 
 num = 100
 epochs = 15
 K = 4
-gamma_c = 1/(255*255)
-gamma_s = 1/(100*100)
+gamma_c = 1 / (255*255)
+gamma_s = 1 / (100*100)
 
 def read_input(filename):
     img = Image.open(filename)
@@ -41,22 +40,22 @@ def initial(data, initial_method):
         prev_classification = []
         border = num * num / K
         for i in range(data.shape[0]):
-            prev_classification.append(int(i / border))
+            prev_classification.append(int(i/border))
         prev_classification = np.asarray(prev_classification)
         return C, mu, prev_classification       
 
 def compute_kernel(color, coord):
     spatial_sq_dists = squareform(pdist(coord, 'sqeuclidean'))
-    spatial_rbf = np.exp(-gamma_s * spatial_sq_dists)
+    spatial_rbf = np.exp(-gamma_s*spatial_sq_dists)
     color_sq_dists = squareform(pdist(color, 'sqeuclidean'))
-    color_rbf = np.exp(-gamma_c * color_sq_dists)
+    color_rbf = np.exp(-gamma_c*color_sq_dists)
     kernel = spatial_rbf * color_rbf
 
     return kernel
 
 def calculate_third_term(kernel_data, classification):
-    cluster_sum = np.zeros(K,dtype=np.int)
-    kernel_sum = np.zeros(K,dtype=np.float)
+    cluster_sum = np.zeros(K, dtype=np.int)
+    kernel_sum = np.zeros(K, dtype=np.float)
     for i in range(classification.shape[0]):
         cluster_sum[classification[i]] += 1
     for cluster in range(K):
@@ -67,7 +66,7 @@ def calculate_third_term(kernel_data, classification):
     for cluster in range(K):
         if cluster_sum[cluster] == 0:
             cluster_sum[cluster] = 1
-        kernel_sum[cluster] /= (cluster_sum[cluster] ** 2)
+        kernel_sum[cluster] /= (cluster_sum[cluster]**2)
     
     return kernel_sum
 

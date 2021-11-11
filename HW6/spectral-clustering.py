@@ -1,13 +1,13 @@
 from PIL import Image
 import numpy as np
-from scipy.spatial.distance import cdist, pdist, squareform
+from scipy.spatial.distance import pdist, squareform
 import matplotlib.pyplot as plt
 
 num = 100
 epochs = 15
 K = 2
-gamma_c = 1/(255*255)
-gamma_s = 1/(100*100)
+gamma_c = 1 / (255*255)
+gamma_s = 1 / (100*100)
 
 def read_input(filename):
     img = Image.open(filename)
@@ -27,9 +27,9 @@ def compute_kernel(color, coord):
     length = len(color)
     gram_matrix = np.zeros((length, length))
     spatial_sq_dists = squareform(pdist(coord, 'sqeuclidean'))
-    spatial_rbf = np.exp(-gamma_s * spatial_sq_dists)
+    spatial_rbf = np.exp(-gamma_s*spatial_sq_dists)
     color_sq_dists = squareform(pdist(color, 'sqeuclidean'))
-    color_rbf = np.exp(-gamma_c * color_sq_dists)
+    color_rbf = np.exp(-gamma_c*color_sq_dists)
     kernel = spatial_rbf * color_rbf
 
     return kernel
@@ -54,19 +54,19 @@ def initial(data, initial_method):
         candidate = np.random.randint(low=0, high=data.shape[0], size=K)
         mu = np.zeros([K, K], dtype=np.float32)
         for i in range(K):
-            mu[i,:] = data[candidate[i],:]
+            mu[i, :] = data[candidate[i], :]
         return mu, prev_classification
     elif initial_method == 'Kmeans++':
         mu = np.zeros([K, K], dtype=np.float32)
         first_cluster = np.random.randint(low=0, high=data.shape[0], size=1, dtype=np.int)
-        mu[0,:] = data[first_cluster,:]
+        mu[0, :] = data[first_cluster, :]
         for i in range(1,K):
             distance = np.zeros(data.shape[0], dtype=np.float32)
             for j in range(0, data.shape[0]):
-                distance[j] = np.linalg.norm(data[j,:] - mu[0,:])
+                distance[j] = np.linalg.norm(data[j, :] - mu[0, :])
             distance = distance / distance.sum()
             candidate = np.random.choice(data.shape[0], 1, p=distance)
-            mu[i,:] = data[candidate,:]
+            mu[i, :] = data[candidate, :]
         return mu, prev_classification
     
 def classify(data, mu):
@@ -74,7 +74,7 @@ def classify(data, mu):
     for dataidx in range(data.shape[0]):
         distance = np.zeros(mu.shape[0], dtype=np.float)
         for cluster in range(mu.shape[0]):
-            delta = abs(np.subtract(data[dataidx,:], mu[cluster,:]))
+            delta = abs(np.subtract(data[dataidx, :], mu[cluster, :]))
             distance[cluster] = np.square(delta).sum(axis=0)
         classification[dataidx] = np.argmin(distance)
 
@@ -97,7 +97,7 @@ def visualization(filename, storename, iteration, classification, initial_method
             pixel[j, i] = color[classification[i * num + j]]
     img.save(storename + '_' + initial_method + '_' + str(gamma_c) + '_' + str(gamma_s) + '_' + str(iteration) + '_'+ str(K) + '.png')
 
-def draw_eigenspace(filename, storename, iteration, classification, initial_method, data):
+def draw_eigenspace(storename, classification, initial_method, data):
     color = iter(plt.cm.rainbow(np.linspace(0, 1, K)))
     plt.clf()
     title = "Spectral-Clustering in Eigen-Space"

@@ -13,7 +13,7 @@ def read_csv():
         csv_reader = csv.reader(csv_file, delimiter=',')
         y_train_2d = list(csv_reader)
         y_train = [y for x in y_train_2d for y in x]
-        y_train = [ int(x) for x in y_train ]
+        y_train = [int(x) for x in y_train]
 
     with open('./data/X_test.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
@@ -24,7 +24,7 @@ def read_csv():
         csv_reader = csv.reader(csv_file, delimiter=',')
         y_test_2d = list(csv_reader)
         y_test = [y for x in y_test_2d for y in x]
-        y_test = [ int(x) for x in y_test ]
+        y_test = [int(x) for x in y_test]
 
     return np.array(x_train), np.array(y_train), np.array(x_test), np.array(y_test)
 

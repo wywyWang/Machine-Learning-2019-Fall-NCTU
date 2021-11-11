@@ -1,6 +1,6 @@
 from PIL import Image
 import numpy as np
-from scipy.spatial.distance import cdist, pdist, squareform
+from scipy.spatial.distance import pdist, squareform
 import matplotlib.pyplot as plt
 import os
 import re
@@ -64,7 +64,7 @@ def compute_betweenclass(classmean, allmean):
 def compute_eigen(A):
     eigenvalues, eigenvectors = np.linalg.eigh(A)
     idx = eigenvalues.argsort()[::-1]                          # sort largest
-    return eigenvectors[:,idx][:,:25]
+    return eigenvectors[:, idx][:, :25]
 
 
 def visualization(dirname, totalfile, storedir, data):
@@ -103,12 +103,12 @@ def KNN(traindata, testdata, target):
     return result
 
 
-def checkperformance(targettest, predict):
+def checkperformance(target_test, predict):
     correct = 0
-    for i in range(len(targettest)):
-        if targettest[i] == predict[i]:
+    for i in range(len(target_test)):
+        if target_test[i] == predict[i]:
             correct += 1
-    print("Accuracy of LDA = {}  ({} / {})".format(correct / len(targettest), correct, len(targettest)))
+    print("Accuracy of LDA = {}  ({} / {})".format(correct / len(target_test), correct, len(target_test)))
 
 def kernelLDA(data, target, method):
     gram_matrix = None

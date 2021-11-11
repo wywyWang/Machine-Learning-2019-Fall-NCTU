@@ -1,6 +1,6 @@
 from PIL import Image
 import numpy as np
-from scipy.spatial.distance import cdist, pdist, squareform
+from scipy.spatial.distance import pdist, squareform
 import matplotlib.pyplot as plt
 import os
 import re
@@ -34,7 +34,7 @@ def compute_eigen(A):
     eigen_values, eigen_vectors = np.linalg.eigh(A)
     print("eigen_values = {}".format(eigen_values.shape))
     idx = eigen_values.argsort()[::-1]                          # sort largest
-    return eigen_vectors[:,idx][:,:25]
+    return eigen_vectors[:, idx][:, :25]
 
 
 def visualization(dirname, totalfile, storedir, data):
@@ -61,24 +61,24 @@ def draweigenface(storedir, eigen_vectors):
         plt.savefig(storedir + title + str(i) + '.png')
 
 
-def KNN(traindata, testdata, target):
-    trainsize = traindata.shape[0]
-    testsize = testdata.shape[0]
+def KNN(train_data, test_data, target):
+    trainsize = train_data.shape[0]
+    testsize = test_data.shape[0]
     result = np.zeros(testsize)
     for testidx in range(testsize):
         alldist = np.zeros(trainsize)
         for trainidx in range(trainsize):
-            alldist[trainidx] = np.sqrt(np.sum((testdata[testidx] - traindata[trainidx]) ** 2))
+            alldist[trainidx] = np.sqrt(np.sum((test_data[testidx] - train_data[trainidx]) ** 2))
         result[testidx] = target[np.argmin(alldist)]
     return result
 
 
-def checkperformance(targettest, predict):
+def checkperformance(target_test, predict):
     correct = 0
-    for i in range(len(targettest)):
-        if targettest[i] == predict[i]:
+    for i in range(len(target_test)):
+        if target_test[i] == predict[i]:
             correct += 1
-    print("Accuracy of PCA = {}  ({} / {})".format(correct / len(targettest), correct, len(targettest)))
+    print("Accuracy of PCA = {}  ({} / {})".format(correct / len(target_test), correct, len(target_test)))
 
 
 def PCA(data):
